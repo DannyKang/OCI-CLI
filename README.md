@@ -187,7 +187,11 @@ $ export vcnid=<your vcn ocid>
 
 $ oci compute image list --compartment-id $cid --query "data [*].{ImageName:\"display-name\", OCID:id}" --output table
 
+```
 
+![](img/Image-1.png)
+
+```shell
 # ssh key 생성
 # ssh-keygen -t rsa -N "" -b 2048 -f ~/OCI-CLI/key/id_rsa 
 
