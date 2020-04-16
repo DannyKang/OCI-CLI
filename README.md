@@ -40,11 +40,6 @@
  - [OCI CLI 설정 기본 정보 수집](http://taewan.kim/tutorial_manual/handson_adw/05.preprocessing/3/)
  - [OCI CLI 설치 및 기본 설정](http://taewan.kim/tutorial_manual/handson_adw/05.preprocessing/4/)
 
-### Terraform 설치
-Terraform 설치는 아래 URL을 참고합니다.
-https://learn.hashicorp.com/terraform/getting-started/install.html
-
-
 
 #### OCI 설치 확인
 ```shell
@@ -94,7 +89,14 @@ $ oci iam compartment list
 
 ![](img/CompartmentList-1.png)
 
+ - jq를 사용해 점더 쉬게 조회하기 
 
+ > jq is a lightweight and flexible command-line JSON processor
+
+```bash
+ $ oci iam compartment list | jq '.data[] | select(.name == "workshop02").id '
+```
+![](img/Compart-ID.png)
 
 
 #### VCN 생성을 쉽게 하기 위해서 변수를 선언한다. 
@@ -115,40 +117,60 @@ $ oci network vcn list --compartment-id $cid
 ### VCN 생성하고 Public Subnet 생성하기 
  - #### CIDR Block 192.168.0.0/16 VCN 생성
  
- ```shell
+```shell
 $ oci network vcn create --cidr-block 192.168.0.0/16 -c <your compartment OCID> --display-name CLI-Demo-VCN --dns-label clidemovcn
- 
-#여기서 만들어진 VCN 의 id를 이용해 아래 처럼 환경 변수를 추가한다. 
+```
+![](img/VCN-ID.png)
 
+
+```shell
+#여기서 만들어진 VCN 의 id를 이용해 아래 처럼 환경 변수를 추가한다. 
 # vcnid 변수 선언
 $ export vcnid=<your vcn ocid>
 
- ```
+```
 
- > VCN 생성을 위한 자세한 사항은 [여기](https://docs.cloud.oracle.com/en-us/iaas/tools/oci-cli/2.9.10/oci_cli_docs/cmdref/network/vcn/create.html)를 참조하세요
+  > VCN 생성을 위한 자세한 사항은 [여기](https://docs.cloud.oracle.com/en-us/iaas/tools/oci-cli/2.9.10/oci_cli_docs/cmdref/network/vcn/create.html)를 참조하세요
 
  - #### Security List, Subnet, Internet Gateway 생성
 
- ```shell
+```shell
 
  $ oci network security-list create --display-name PubSub1 --vcn-id $vcnid -c $cid --egress-security-rules '[{"destination": "0.0.0.0/0", "destination-type": "CIDR_BLOCK", "protocol": "all", "isStateless": false}]' --ingress-security-rules '[{"source": "0.0.0.0/0", "source-type": "CIDR_BLOCK", "protocol": 6, "isStateless": false, "tcp-options": {"destination-port-range": {"max": 80, "min": 80}}}]'
+```
 
-# security list 변수 선언
- $ export seclistid=<your security-list ocid>
+![](img/Security-ID.png)
 
-# Subnet 생성
- $ oci network subnet create --cidr-block 192.168.10.0/24 -c $cid --vcn-id $vcnid --security-list-ids '["$seclistid"]'
+```shell
+# Subnet 생성 (위 step에서 생성한 Security list OCID 사용)
+
+ $ oci network subnet create --cidr-block 192.168.10.0/24 -c $cid --vcn-id $vcnid --security-list-ids '["<security list ocid from previous step>"]'
+```
+
+```shell
+![](img/Subnet-1.png)
 
 # Internet Gateway 생성
  $ oci network internet-gateway create -c $cid --is-enabled true --vcn-id $vcnid --display-name DemoIGW
- 
+```
+
+![](img/IG-1.png)
+
+ ```shell
 # rout table 조회
  $ oci network route-table list -c $cid --vcn-id $vcnid
+ ```
 
+![](img/RT-1.png)
+
+
+```shell
 # Internet Gateway를 이용하도록 rout table 갱신
  $ oci network route-table update --rt-id <route table OCID> --route-rules '[{"cidrBlock":"0.0.0.0/0","networkEntityId":"<your Internet Gateway OCID"}]'
+```
 
- ```
+![](img/RT-2.png)
+
 </details>
 
 
@@ -162,7 +184,6 @@ $ export vcnid=<your vcn ocid>
 ### Oracle Linux Image ID 조회, Compute Instance 생성
 
  ```shell
-# $ oci compute image list --compartment-id $cid --query 'data[?contains("display-name",Oracle-Linux-7.7-20)]|[0:1].["display-name",id]'
 
 $ oci compute image list --compartment-id $cid --query "data [*].{ImageName:\"display-name\", OCID:id}" --output table
 
