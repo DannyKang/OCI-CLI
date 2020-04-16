@@ -6,7 +6,7 @@
 
 <details>
 <summary>
-<font size=4>Cloud Shelld을 이용한 OCI CLI 실습</font>
+<b><font size=5>1. Cloud Shelld을 이용한 OCI CLI 실습</font></b>
 </summary>
 
 ## Cloud Shell 사용
@@ -78,18 +78,28 @@ $ terraform version
 
 <details>
 <summary>
-<font size=4>2. OCI CLI를 이용한 VCN 생성</font>
+<b><font size=5>2. OCI CLI를 이용한 VCN 생성</font></b>
 </summary>
 
+### 생성된 Compartment와 VCN 조회하기  
 
-메뉴->Identity->Compartment에서 본인이 만든 Compartment OCID 확인
+#### 메뉴->Identity->Compartment에서 본인이 만든 Compartment OCID 확인
 ![](img/CompartmentList-3.png)
 
-혹은 아래와 같이 OCI CLI로 Compartment OCID를 확인한다. 
-![](img/CompartmentList-1.png)
-OCI CLI를 통해 Compartment OCID를 
 
-## 
+#### 혹은 아래와 같이 OCI CLI로 Compartment OCID를 확인한다. 
+
+```bash
+$ oci iam compartment list
+```
+
+![](img/CompartmentList-1.png)
+
+
+
+
+#### VCN 생성을 쉽게 하기 위해서 변수를 선언한다. 
+
 ```shell
 # compartment 변수 선언
 $ export cid=<your compartment ocid>
@@ -104,21 +114,21 @@ $ oci network vcn list --compartment-id $cid
 
 
 ### VCN 생성하고 Public Subnet 생성하기 
- - CIDR Block 192.168.0.0/16 VCN 생성
+ - #### CIDR Block 192.168.0.0/16 VCN 생성
  
  ```shell
 $ oci network vcn create --cidr-block 192.168.0.0/16 -c <your compartment OCID> --display-name CLI-Demo-VCN --dns-label clidemovcn
  
 #여기서 만들어진 VCN 의 id를 이용해 아래 처럼 환경 변수를 추가한다. 
 
-# compartment 변수 선언
+# vcnid 변수 선언
 $ export vcnid=<your vcn ocid>
 
  ```
 
- VCN 생성을 위한 자세한 사항은 [여기](https://docs.cloud.oracle.com/en-us/iaas/tools/oci-cli/2.9.10/oci_cli_docs/cmdref/network/vcn/create.html)를 참조하세요
+ > VCN 생성을 위한 자세한 사항은 [여기](https://docs.cloud.oracle.com/en-us/iaas/tools/oci-cli/2.9.10/oci_cli_docs/cmdref/network/vcn/create.html)를 참조하세요
 
- - Security List, Subnet, Internet Gateway 생성
+ - #### Security List, Subnet, Internet Gateway 생성
 
  ```shell
 
@@ -131,7 +141,7 @@ $ export vcnid=<your vcn ocid>
  $ oci network subnet create --cidr-block 192.168.10.0/24 -c $cid --vcn-id $vcnid --security-list-ids '["$seclistid"]'
 
 # Internet Gateway 생성
- $ oci network internet-gateway create -c $cid --is-enabled true --vcn-id vcnid --display-name DemoIGW
+ $ oci network internet-gateway create -c $cid --is-enabled true --vcn-id $vcnid --display-name DemoIGW
  
 # rout table 조회
  $ oci network route-table list -c $cid --vcn-id $vcnid
@@ -140,8 +150,17 @@ $ export vcnid=<your vcn ocid>
  $ oci network route-table update --rt-id <route table OCID> --route-rules '[{"cidrBlock":"0.0.0.0/0","networkEntityId":"<your Internet Gateway OCID"}]'
 
  ```
+</details>
 
- - Oracle Linux Image ID 조회, Compute Instance 생성
+
+
+<details>
+<summary>
+<b><font size=5>3. Compute Instance 생성</font></b>
+</summary>
+
+
+### Oracle Linux Image ID 조회, Compute Instance 생성
 
  ```shell
 # $ oci compute image list --compartment-id $cid --query 'data[?contains("display-name",Oracle-Linux-7.7-20)]|[0:1].["display-name",id]'
