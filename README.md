@@ -1,7 +1,6 @@
-# OCI-CLI Hands On
+![](img/bg.png)
 
-## Table of Contents
-[Overview](#overview)
+# OCI-CLI Hands On
 
 
 <details>
