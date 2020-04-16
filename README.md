@@ -171,6 +171,11 @@ $ export vcnid=<your vcn ocid>
 
 ![](img/RT-2.png)
 
+
+#### OCI Console을 이용해 생성된 VCN 확인 
+![](img/Console-1.png)
+
+
 </details>
 
 
